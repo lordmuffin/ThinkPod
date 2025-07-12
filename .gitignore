@@ -1,0 +1,42 @@
+node_modules/*
+
+# Uploaded files (keep directory structure but ignore content)
+uploads/**/*
+!uploads/**/.gitkeep
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.test
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build directories
+dist/
+build/
+out/
+
+# Temporary files
+tmp/
+temp/

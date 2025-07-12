@@ -1,0 +1,72 @@
+{
+  "name": "@thinkpod/root",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Mobile App with Voice-to-Text and LLM Integration",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:api": "npm run dev --workspace=@thinkpod/api",
+    "dev:web": "npm run dev --workspace=@thinkpod/web",
+    "dev:mobile": "npm run dev --workspace=@thinkpod/mobile",
+    "test": "npm run test --workspaces",
+    "test:coverage": "npm run test:coverage --workspaces",
+    "lint": "npm run lint --workspaces",
+    "type-check": "npm run type-check --workspaces",
+    "clean": "npm run clean --workspaces && rm -rf node_modules",
+    "install:all": "npm install && npm run install --workspaces",
+    "docker:dev": "docker-compose -f docker/docker-compose.dev.yml up -d",
+    "docker:prod": "docker-compose -f docker/docker-compose.prod.yml up -d",
+    "migration:run": "npm run migration:run --workspace=@thinkpod/api",
+    "migration:create": "npm run migration:create --workspace=@thinkpod/api",
+    "seed": "npm run seed --workspace=@thinkpod/api"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "concurrently": "^8.2.2",
+    "eslint": "^8.54.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.1",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0",
+    "prettier": "^3.1.0",
+    "typescript": "^5.3.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
+  },
+  "keywords": [
+    "mobile-app",
+    "voice-to-text",
+    "llm",
+    "react-native",
+    "nextjs",
+    "socket.io",
+    "postgresql",
+    "vector-search",
+    "openai",
+    "whisper"
+  ],
+  "author": "ThinkPod Team",
+  "license": "MIT"
+}

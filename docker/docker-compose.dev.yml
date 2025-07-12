@@ -1,0 +1,116 @@
+version: '3.8'
+
+services:
+  # PostgreSQL database with pgvector extension
+  postgres:
+    image: pgvector/pgvector:pg15
+    container_name: thinkpod-postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: thinkpod_dev
+      POSTGRES_USER: thinkpod_user
+      POSTGRES_PASSWORD: thinkpod_password
+      POSTGRES_HOST_AUTH_METHOD: md5
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../database/migrations:/docker-entrypoint-initdb.d/migrations:ro
+      - ../database/seeds:/docker-entrypoint-initdb.d/seeds:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U thinkpod_user -d thinkpod_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - thinkpod-network
+
+  # Redis for caching and session storage
+  redis:
+    image: redis:7-alpine
+    container_name: thinkpod-redis-dev
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass thinkpod_redis_password
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - thinkpod-network
+
+  # ChromaDB for vector embeddings
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: thinkpod-chromadb-dev
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      CHROMA_HOST: 0.0.0.0
+      CHROMA_PORT: 8000
+      CHROMA_LOG_LEVEL: INFO
+    volumes:
+      - chromadb_data:/chroma/chroma
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - thinkpod-network
+
+  # pgAdmin for database management (optional)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: thinkpod-pgadmin-dev
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@thinkpod.dev
+      PGADMIN_DEFAULT_PASSWORD: admin_password
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "8080:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    networks:
+      - thinkpod-network
+    profiles:
+      - tools
+
+  # Redis Commander for Redis management (optional)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: thinkpod-redis-commander-dev
+    restart: unless-stopped
+    environment:
+      REDIS_HOSTS: local:redis:6379:0:thinkpod_redis_password
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+    networks:
+      - thinkpod-network
+    profiles:
+      - tools
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  chromadb_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+networks:
+  thinkpod-network:
+    driver: bridge
+    name: thinkpod-dev-network
