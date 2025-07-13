@@ -30,6 +30,9 @@ Or with options:
 
 ## Best Practices for Commits
 
+- **Commit messages**: should not include a Claude attribution footer
+  - Don't write: 🤖 Generated with [Claude Code](https://claude.ai/code)
+  - Don't write: Co-Authored-By: Claude <noreply@anthropic.com>
 - **Verify before committing**: Ensure code is linted, builds correctly, and documentation is updated
 - **Atomic commits**: Each commit should contain related changes that serve a single purpose
 - **Split large changes**: If changes touch multiple concerns, split them into separate commits
@@ -155,11 +158,14 @@ Example of splitting commits:
 
 ## Important Notes
 
-- By default, pre-commit checks (`pnpm lint`, `pnpm build`, `pnpm generate:docs`) will run to ensure code quality
-- If these checks fail, you'll be asked if you want to proceed with the commit anyway or fix the issues first
 - If specific files are already staged, the command will only commit those files
 - If no files are staged, it will automatically stage all modified and new files
 - The commit message will be constructed based on the changes detected
 - Before committing, the command will review the diff to identify if multiple commits would be more appropriate
 - If suggesting multiple commits, it will help you stage and commit the changes separately
 - Always reviews the commit diff to ensure the message matches the changes
+
+- Confirm with the user, and then run the exact same command
+- If pre-commit hooks fail, then there are now local changes
+  - `git add` those changes and try again
+  - Never use `git commit --no-verify`
