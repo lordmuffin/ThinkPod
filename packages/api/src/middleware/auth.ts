@@ -31,10 +31,16 @@ const extractToken = (req: Request): string | null => {
     return authHeader.substring(7);
   }
 
-  // Check cookie
-  const cookieToken = req.cookies?.token;
-  if (cookieToken) {
-    return cookieToken;
+  // Check secure auth cookie first
+  const authCookie = req.cookies?.['auth-token'];
+  if (authCookie) {
+    return authCookie;
+  }
+
+  // Check legacy cookie for backward compatibility
+  const legacyCookie = req.cookies?.token;
+  if (legacyCookie) {
+    return legacyCookie;
   }
 
   // Check query parameter (less secure, for specific use cases)

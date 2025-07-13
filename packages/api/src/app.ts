@@ -15,6 +15,7 @@ import { logger } from './utils/logger';
 import { DatabaseConnection } from './utils/database';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { authMiddleware } from './middleware/auth';
+import { csrfProtection, getCsrfTokenEndpoint } from './middleware/csrf';
 import { setupSocketHandlers } from './sockets';
 
 // Import routes
@@ -72,13 +73,16 @@ class App {
       origin: process.env.FRONTEND_URL || 'http://localhost:3000',
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'x-csrf-token'],
     }));
 
     // Body parsing with large limit for file uploads (from PRP)
     this.app.use(express.json({ limit: '50mb' }));
     this.app.use(express.urlencoded({ extended: true, limit: '50mb' }));
     this.app.use(cookieParser());
+
+    // CSRF protection middleware (after cookie parser)
+    this.app.use(csrfProtection);
 
     // Rate limiting (from PRP pattern)
     const generalLimiter = rateLimit({
@@ -126,6 +130,9 @@ class App {
         environment: process.env.NODE_ENV || 'development',
       });
     });
+
+    // CSRF token endpoint (no auth required)
+    this.app.get('/api/csrf-token', getCsrfTokenEndpoint);
   }
 
   private async setupDatabase(): Promise<void> {

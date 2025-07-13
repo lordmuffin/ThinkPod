@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { db } from '../utils/database';
 import { logger } from '../utils/logger';
 import { asyncHandler, validateRequest, AppError } from '../middleware/errorHandler';
+import { setAuthCookie, setRefreshCookie, clearAuthCookies } from '../utils/cookies';
 import { schemas } from '@thinkpod/shared';
 import type { User, AuthResponse } from '@thinkpod/shared';
 
@@ -101,6 +102,10 @@ router.post('/register', validateRequest(registerSchema), asyncHandler(async (re
   // Store refresh token
   await storeRefreshToken(newUser.id, refreshToken);
 
+  // Set secure cookies
+  setAuthCookie(res, token);
+  setRefreshCookie(res, refreshToken);
+
   // Log registration
   logger.info('User registered successfully', {
     userId: newUser.id,
@@ -152,6 +157,10 @@ router.post('/login', validateRequest(loginSchema), asyncHandler(async (req: Req
   
   // Store refresh token
   await storeRefreshToken(user.id, refreshToken);
+
+  // Set secure cookies
+  setAuthCookie(res, token);
+  setRefreshCookie(res, refreshToken);
 
   // Log successful login
   logger.info('User logged in successfully', {
@@ -218,6 +227,10 @@ router.post('/refresh', validateRequest(refreshTokenSchema), asyncHandler(async 
     // Store new refresh token
     await storeRefreshToken(user.id, newRefreshToken);
 
+    // Set secure cookies
+    setAuthCookie(res, newToken);
+    setRefreshCookie(res, newRefreshToken);
+
     // Return new tokens
     const response: AuthResponse = {
       success: true,
@@ -265,6 +278,9 @@ router.post('/logout', asyncHandler(async (req: Request, res: Response) => {
       logger.warn('Error during logout:', error);
     }
   }
+
+  // Clear secure cookies
+  clearAuthCookies(res);
 
   res.json({
     success: true,
